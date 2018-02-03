@@ -19,9 +19,9 @@ dependencies {
 
 docker {
     registryCredentials {
-        username = project.findProperty('docker.username')
-        password = project.findProperty('docker.password')
-        email = project.findProperty('docker.email')
+        username = getConfigurationProperty('DOCKER_USERNAME', 'docker.username')
+        password = getConfigurationProperty('DOCKER_PASSWORD', 'docker.password')
+        email = getConfigurationProperty('DOCKER_EMAIL', 'docker.email')
     }
 }
 
@@ -61,4 +61,8 @@ task pushImage(type: DockerPushImage) {
     group = 'Docker'
     dependsOn buildImage
     conventionMapping.imageName = { buildImage.getTag() }
+}
+
+String getConfigurationProperty(String envVar, String sysProp) {
+    System.getenv(envVar) ?: project.findProperty(sysProp)
 }
