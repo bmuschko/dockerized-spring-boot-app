@@ -1,0 +1,64 @@
+plugins {
+    id 'war'
+    id 'org.springframework.boot' version '1.5.9.RELEASE'
+    id 'com.bmuschko.docker-remote-api' version '3.2.3'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-web')
+    providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+}
+
+docker {
+    registryCredentials {
+        username = project.findProperty('docker.username')
+        password = project.findProperty('docker.password')
+        email = project.findProperty('docker.email')
+    }
+}
+
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+
+task createDockerfile(type: Dockerfile) {
+    group = 'Docker'
+    destFile = project.file('build/docker/Dockerfile')
+    from 'openjdk:8-jre-alpine'
+    maintainer 'Benjamin Muschko "benjamin.muschko@gmail.com"'
+    copyFile war.archiveName, '/app/account-web-service.war'
+    entryPoint 'java'
+    defaultCommand '-jar', '/app/account-web-service.war'
+    exposePort 8080
+    runCommand 'apk --update --no-cache add curl'
+    instruction 'HEALTHCHECK CMD curl -f http://localhost:8080/health || exit 1'
+}
+
+task syncWebAppArchive(type: Sync) {
+    dependsOn assemble
+    from war.archivePath
+    into createDockerfile.destFile.parentFile
+}
+
+createDockerfile.dependsOn syncWebAppArchive
+
+task buildImage(type: DockerBuildImage) {
+    group = 'Docker'
+    dependsOn createDockerfile
+    inputDir = createDockerfile.destFile.parentFile
+    tag = "bmuschko/account-web-service:$war.version"
+}
+
+task pushImage(type: DockerPushImage) {
+    group = 'Docker'
+    dependsOn buildImage
+    conventionMapping.imageName = { buildImage.getTag() }
+}

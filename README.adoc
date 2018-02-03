@@ -1,0 +1,3 @@
+= Dockerized Spring Boot application image:https://travis-ci.org/bmuschko/dockerized-spring-boot-app.svg?branch=master["Build Status", link="https://travis-ci.org/bmuschko/dockerized-spring-boot-app"]
+
+A Spring Boot application dockerized with the help of the link:https://github.com/bmuschko/gradle-docker-plugin[Gradle Docker plugin] as part of the build process.
