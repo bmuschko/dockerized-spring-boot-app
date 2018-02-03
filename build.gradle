@@ -1,6 +1,6 @@
 plugins {
     id 'war'
-    id 'org.springframework.boot' version '1.5.9.RELEASE'
+    id 'org.springframework.boot' version '1.5.10.RELEASE'
     id 'com.bmuschko.docker-remote-api' version '3.2.3'
 }
 
